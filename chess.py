@@ -11,15 +11,72 @@ P2 = {"Pawn" : "b", "Rook" : "♜", "Knight" : "♞", "Bishop" : "♝", "King" :
 # rutornas numrering i ett dictionary
 SqCodeX = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
 SqCodeY = {"1":7, "2":6, "3":5, "4":4, "5":3, "6":2, "7":1, "8":0}
-# ---------------------------------------------------------------
 
+# ---------------------------------------------------------------
 # Här beksrivs/tas fram vilken spelares tur det är
 
 def playerturn(arg1):
     if arg1 % 2 == 0:
-        return ("Black's turn")
+        return ("Black's turn: {} seconds remaining".format(bT))
     if arg1 % 2 != 0:
-        return("White's turn")
+        return("White's turn: {} seconds remaining".format(wT))
+    
+def playertime(arg1):
+    global wT
+    global bT
+    if arg1 % 2 == 0:
+        bT -= TotTime
+    if arg1 % 2 != 0:
+        wT -= TotTime
+
+# ---------------------------------------------------------------
+
+# denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG
+
+def legalmove1():
+    
+    if T % 2 == 0:
+        if tP in P2.values():
+            return False
+        else:
+            return True
+    
+    if T % 2 != 0:
+        if tP in P1.values():
+            return False
+        else:
+            return True
+
+# ---------------------------------------------------------------
+
+# denna del ska kolla så att själva draget är lagligt - än så länge kollar den endast bönder
+
+def legalmove2():
+    global P
+    
+    if P == "♙":
+        if T == 1:
+            if (My == Py - 1 and Mx == Px) or (My == Py - 2 and Mx == Px):
+                return True
+            else:
+                return False
+        if T != 1:
+            if (My == Py and Mx == Px):
+                return True
+            else:
+                return False
+            
+    if P == "b":
+        if T == 2:
+            if (My == Py + 1 and Mx == Px) or (My == Py + 2 and Mx == Px):
+                return True
+            else:
+                return False
+        if T != 2:
+            if (My == Py and Mx == Px):
+                return True
+            else:
+                return False
 
 # ---------------------------------------------------------------
 
@@ -83,19 +140,37 @@ while True:
     print(playerturn(T))
         
     print("Vilken pjäs ska du flytta?")
-    Py = int(SqCodeX[input()])
-    Px = int(SqCodeY[input()])
+    Px = int(SqCodeX[input()])
+    Py = int(SqCodeY[input()])
     
     print("Vart ska pjäsen flyttas?")
-    My = int(SqCodeX[input()])
-    Mx = int(SqCodeY[input()])
+    Mx = int(SqCodeX[input()])
+    My = int(SqCodeY[input()])
     
     end = time.time()
     TotTime = int(end - start)
+    playertime(T)
     
-    P = Board[Px, Py] 
-    Board[Mx, My] = P
-    Board[Px, Py] = " "
+    P = Board[Py, Px]
+    legalmove2()
+    if legalmove2() == True:
+        None
+    if legalmove2() == False:
+        print("Olagligt drag, försök igen")
+        T -= 1
+        continue
+    
+    tP = Board[My, Mx]
+    legalmove1()
+    if legalmove() == True:
+        None
+    if legalmove() == False:
+        print("Olagligt drag, försök igen")
+        T -= 1
+        continue
+    
+    Board[My, Mx] = P
+    Board[Py, Px] = " "
     print(Board)
 
 # ---------------------------------------------------------------
