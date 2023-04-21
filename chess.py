@@ -49,34 +49,76 @@ def legalmove1():
 
 # ---------------------------------------------------------------
 
-# denna del ska kolla så att själva draget är lagligt - än så länge kollar den endast bönder
+# denna del ska kolla så att själva draget är lagligt
 
 def legalmove2():
     global P
+    global Mx
+    global My
+    global Px
+    global Py
     
     if P == "♙":
-        if T == 1:
+        if Py == 6:
             if (My == Py - 1 and Mx == Px) or (My == Py - 2 and Mx == Px):
+                return True
+            elif ((My == Py - 1 and Mx == Px + 1) or (My == Py - 1 and Mx == Px - 1)) and tP in P2.values():
                 return True
             else:
                 return False
-        if T != 1:
-            if (My == Py and Mx == Px):
+        if Py != 6:
+            if (My == Py + 1 and Mx == Px):
+                return True
+            elif ((My == Py - 1 and Mx == Px + 1) or (My == Py - 1 and Mx == Px - 1)) and tP in P2.values():
                 return True
             else:
                 return False
             
-    if P == "b":
-        if T == 2:
+    if P == "♙":
+        if Py == 1:
             if (My == Py + 1 and Mx == Px) or (My == Py + 2 and Mx == Px):
                 return True
-            else:
-                return False
-        if T != 2:
-            if (My == Py and Mx == Px):
+            elif ((My == Py + 1 and Mx == Px + 1) or (My == Py + 1 and Mx == Px - 1)) and tP in P1.values():
                 return True
             else:
                 return False
+        if Py != 1:
+            if (My == Py - 1 and Mx == Px):
+                return True
+            elif ((My == Py + 1 and Mx == Px + 1) or (My == Py + 1 and Mx == Px - 1)) and tP in P1.values():
+                return True
+            else:
+                return False
+            
+    if P == "♖" or "♜":
+        if (Mx != Px and My != Py) or (Mx == Px and My == Py):
+            return False
+        else:
+            return True
+    
+    if P == "♗" or "♝":
+        if (abs(Mx - Px) == abs(My - Py)):
+            return True
+        if Mx == Px and My == Py:
+            return False
+        else:
+            return False
+        
+    if P == "♔" or "♚":
+        if (abs(Mx - Px) == 1 and My == Py) or (abs(My - Py) == 1 and Mx == Px):
+            return True
+        elif (abs(Mx - Px) == 1) and (abs(My - Py) == 1):
+            return True
+        else:
+            return False
+     
+    if P == "♕" or "♛":
+        if (Mx == Px) and (My != Py):
+            return True
+        elif (abs(Mx - Px) == abs(My - Py)):
+            return True
+        else:
+            return False
 
 # ---------------------------------------------------------------
 
@@ -93,6 +135,7 @@ for i in range(8):
     Y[i, 0] = i + 1
 
 # placerar pjäserna
+
 for i in range(8):
     Board[1, i] = P2["Pawn"]
     Board[6, i] = P1["Pawn"]
@@ -122,7 +165,15 @@ Board[7, 5] = P1["Bishop"]
 
 Board[7, 3] = P1["Queen"]
 Board[7, 4] = P1["King"]
-    
+
+# -----------------
+
+for i in range(4):
+    for j in range(8):
+        Board[i+2, j] = " "
+
+# -----------------
+
 print(Board)
 
 # ---------------------------------------------------------------
@@ -152,20 +203,20 @@ while True:
     playertime(T)
     
     P = Board[Py, Px]
+    tP = Board[My, Mx]
     legalmove2()
     if legalmove2() == True:
         None
     if legalmove2() == False:
-        print("Olagligt drag, försök igen")
+        print("Olagligt drag, så får man inte göra. Försök igen")
         T -= 1
         continue
-    
-    tP = Board[My, Mx]
+
     legalmove1()
-    if legalmove() == True:
+    if legalmove1() == True:
         None
-    if legalmove() == False:
-        print("Olagligt drag, försök igen")
+    if legalmove1() == False:
+        print("Olagligt drag, där står din pjäs redan. Försök igen")
         T -= 1
         continue
     
