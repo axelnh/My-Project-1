@@ -6,7 +6,7 @@ import time as time
 # P2 = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "r1", "h1", "b1", "q", "k", "b2", "h2", "r2"]
 
 P1 = {"Pawn" : "♙", "Rook" : "♖", "Knight" : "♘", "Bishop" : "♗", "King" : "♔", "Queen" : "♕" }
-P2 = {"Pawn" : "b", "Rook" : "♜", "Knight" : "♞", "Bishop" : "♝", "King" : "♚", "Queen" : "♛" }
+P2 = {"Pawn" : "♟", "Rook" : "♜", "Knight" : "♞", "Bishop" : "♝", "King" : "♚", "Queen" : "♛" }
 
 # rutornas numrering i ett dictionary
 SqCodeX = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
@@ -74,7 +74,7 @@ def legalmove2():
             else:
                 return False
             
-    if P == "♙":
+    if P == "♟":
         if Py == 1:
             if (My == Py + 1 and Mx == Px) or (My == Py + 2 and Mx == Px):
                 return True
