@@ -34,18 +34,27 @@ def playertime(arg1):
 # denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG
 
 def legalmove1():
+    global P
+    global Mx
+    global My
+    global Px
+    global Py
     
-    if T % 2 == 0:
-        if tP in P2.values():
-            return False
-        else:
-            return True
+    if (Mx == Px) and (My == Py):
+        return False
     
-    if T % 2 != 0:
-        if tP in P1.values():
-            return False
-        else:
-            return True
+    else:
+        if T % 2 == 0:
+            if tP in P2.values():
+                return False
+            else:
+                return True
+    
+        if T % 2 != 0:
+            if tP in P1.values():
+                return False
+            else:
+                return True
 
 # ---------------------------------------------------------------
 
@@ -60,51 +69,76 @@ def legalmove2():
     
     if P == "♙":
         if Py == 6:
-            if (My == Py - 1 and Mx == Px) or (My == Py - 2 and Mx == Px):
+            if (Board[(Py - 1), Px] in P1.values()) or (Board[(Py - 1), Px] in P2.values()):
+                return False
+            elif (My == Py - 1 and Mx == Px) or (My == Py - 2 and Mx == Px):
                 return True
             elif ((My == Py - 1 and Mx == Px + 1) or (My == Py - 1 and Mx == Px - 1)) and tP in P2.values():
                 return True
             else:
                 return False
         if Py != 6:
-            if (My == Py + 1 and Mx == Px):
+            if (My == Py - 1 and Mx == Px):
                 return True
             elif ((My == Py - 1 and Mx == Px + 1) or (My == Py - 1 and Mx == Px - 1)) and tP in P2.values():
                 return True
             else:
                 return False
             
-    if P == "♟":
+    elif P == "♟":
         if Py == 1:
-            if (My == Py + 1 and Mx == Px) or (My == Py + 2 and Mx == Px):
+            if (Board[(Py + 1), Px] in P1.values()) or (Board[(Py + 1), Px] in P2.values()):
+                return False
+            elif (My == Py + 1 and Mx == Px) or (My == Py + 2 and Mx == Px):
                 return True
             elif ((My == Py + 1 and Mx == Px + 1) or (My == Py + 1 and Mx == Px - 1)) and tP in P1.values():
                 return True
             else:
                 return False
         if Py != 1:
-            if (My == Py - 1 and Mx == Px):
+            if (My == Py + 1 and Mx == Px):
                 return True
             elif ((My == Py + 1 and Mx == Px + 1) or (My == Py + 1 and Mx == Px - 1)) and tP in P1.values():
                 return True
             else:
                 return False
             
-    if P == "♖" or "♜":
+    elif P == "♖" or P == "♜":
+        xdelta = (Mx - Px)
+        ydelta = (My - Py)
+        
+        if (xdelta != 0):
+            for i in range(abs(xdelta)):
+                if xdelta <= 0:
+                    i = -i
+                if i == 0:
+                    continue
+                if (Board[Py, (Px + i)] in P1.values()) or (Board[Py, (Px + i)] in P2.values()):
+                    return False
+                else:
+                    None
+        elif (ydelta != 0):
+            for i in range(abs(ydelta)):
+                if ydelta <= 0:
+                    i = -i
+                if i == 0:
+                    continue
+                if (Board[(Py + i), Px] in P1.values()) or (Board[(Py + i), Px] in P2.values()):
+                    return False
+                else:
+                    None
         if (Mx != Px and My != Py) or (Mx == Px and My == Py):
             return False
         else:
             return True
     
-    if P == "♗" or "♝":
+    elif P == "♗" or P == "♝":
         if (abs(Mx - Px) == abs(My - Py)):
             return True
-        if Mx == Px and My == Py:
-            return False
         else:
             return False
         
-    if P == "♔" or "♚":
+    elif P == "♔" or P == "♚":
         if (abs(Mx - Px) == 1 and My == Py) or (abs(My - Py) == 1 and Mx == Px):
             return True
         elif (abs(Mx - Px) == 1) and (abs(My - Py) == 1):
@@ -112,13 +146,24 @@ def legalmove2():
         else:
             return False
      
-    if P == "♕" or "♛":
+    elif P == "♕" or P == "♛":
         if (Mx == Px) and (My != Py):
             return True
         elif (abs(Mx - Px) == abs(My - Py)):
             return True
         else:
             return False
+    
+    elif P == "♘" or P == "♞":
+        if (abs(My - Py) == 2) and (abs(Mx - Px) == 1):
+            return True
+        elif (abs(Mx - Px) == 2) and (abs(My - Py) == 1):
+            return True
+        else:
+            return False
+        
+    else:
+        return False
 
 # ---------------------------------------------------------------
 
@@ -186,6 +231,7 @@ wT = 600
 bT = 600
 
 while True:
+    print(Board)
     start = time.time()
     T += 1
     print(playerturn(T))
@@ -207,7 +253,7 @@ while True:
     legalmove2()
     if legalmove2() == True:
         None
-    if legalmove2() == False:
+    elif legalmove2() == False:
         print("Olagligt drag, så får man inte göra. Försök igen")
         T -= 1
         continue
@@ -215,13 +261,12 @@ while True:
     legalmove1()
     if legalmove1() == True:
         None
-    if legalmove1() == False:
+    elif legalmove1() == False:
         print("Olagligt drag, där står din pjäs redan. Försök igen")
         T -= 1
         continue
     
     Board[My, Mx] = P
     Board[Py, Px] = " "
-    print(Board)
 
 # ---------------------------------------------------------------
