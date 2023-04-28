@@ -27,7 +27,8 @@ def playertime(arg1):
 
 # ---------------------------------------------------------------
 
-# denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG
+ # denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG 
+ # och så att den flyttade pjäsen inte passerar genom en annan pjäs
 
 def legalmove1():
     global P
@@ -51,6 +52,86 @@ def legalmove1():
                 return False
             else:
                 return True
+    if P == "♖" or P == "♜" or P == "♕" or P == "♛":
+        if ((Mx != Px) and (My == Py)) or ((Mx == Px) and (My != Py)):
+            
+            xdelta = (Mx - Px)
+            ydelta = (My - Py)
+        
+            if xdelta >= 2:
+                for i in range(xdelta):
+                    if i == 0:
+                        continue
+                    if Board[Py, (Px + i)] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+            if xdelta <= -2:
+                for i in range(xdelta):
+                    if i == 0:
+                        continue
+                    if Board[Py, (Px - i)] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+            if ydelta >= 2:
+                for i in range(ydelta):
+                    if i == 0:
+                        continue
+                    if Board[(Py + i), Px] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+            if ydelta <= -2:
+                for i in range(ydelta):
+                    if i == 0:
+                        continue
+                    if Board[(Py - i), Px] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+        else:
+            None
+    if P == "♗" or P == "♝" or P == "♕" or P == "♛":
+        if ((Mx - Px) == (My - Py)):
+            
+            xdelta = (Mx - Px)
+            ydelta = (My - Py)
+            
+            if xdelta >= 2 and ydelta >= 2:
+                for i in range(xdelta):
+                    if i == 0:
+                        continue
+                    if Board[(Py + i), (Px + i)] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+            if xdelta >= 2 and ydelta <= -2:
+                for i in range(xdelta):
+                    if i == 0:
+                        continue
+                    if Board[(Py - i), (Px + i)] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+            if xdelta <= -2 and ydelta >= 2:
+                for i in range(ydelta):
+                    if i == 0:
+                        continue
+                    if Board[(Py + i), (Px - i)] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+            if xdelta <= -2 and ydelta <= -2:
+                for i in range(abs(xdelta)):
+                    if i == 0:
+                        continue
+                    if Board[(Py - i), (Px - i)] in (P1.values() or P2.values()):
+                        return False
+                    else:
+                        None
+        else:
+            None
 
 # ---------------------------------------------------------------
 
@@ -100,26 +181,11 @@ def legalmove2():
                 return False
             
     elif P == "♖" or P == "♜":
-        xdelta = (Mx - Px)
-        ydelta = (My - Py)
-        
-        if (xdelta != 0):
-            for i in range(abs(xdelta)):
-                if xdelta <= 0:
-                    i = -i
+        if ydelta <= -2:
+            for i in range(ydelta):
                 if i == 0:
                     continue
-                if (Board[Py, (Px + i)] in P1.values()) or (Board[Py, (Px + i)] in P2.values()):
-                    return False
-                else:
-                    None
-        elif (ydelta != 0):
-            for i in range(abs(ydelta)):
-                if ydelta <= 0:
-                    i = -i
-                if i == 0:
-                    continue
-                if (Board[(Py + i), Px] in P1.values()) or (Board[(Py + i), Px] in P2.values()):
+                if Board[(Py - i), Px] in (P1.values() or P2.values()):
                     return False
                 else:
                     None
@@ -144,6 +210,8 @@ def legalmove2():
      
     elif P == "♕" or P == "♛":
         if (Mx == Px) and (My != Py):
+            return True
+        elif (My == Py) and (Mx != Px):
             return True
         elif (abs(Mx - Px) == abs(My - Py)):
             return True
@@ -233,12 +301,14 @@ while True:
     print(playerturn(T))
         
     print("Vilken pjäs ska du flytta?")
-    Px = int(SqCodeX[input()])
-    Py = int(SqCodeY[input()])
+    Pp1 = [*input()]
+    Px = int(SqCodeX[Pp1[0]])
+    Py = int(SqCodeY[Pp1[1]])
     
     print("Vart ska pjäsen flyttas?")
-    Mx = int(SqCodeX[input()])
-    My = int(SqCodeY[input()])
+    Pp2 = [*input()]
+    Mx = int(SqCodeX[Pp2[0]])
+    My = int(SqCodeY[Pp2[1]])
     
     end = time.time()
     TotTime = int(end - start)
@@ -250,7 +320,8 @@ while True:
     if legalmove2() == True:
         None
     elif legalmove2() == False:
-        print("Olagligt drag, så får man inte göra. Försök igen")
+        clear_output(wait=True)
+        print("Olagligt drag. Försök igen")
         T -= 1
         continue
 
@@ -258,11 +329,13 @@ while True:
     if legalmove1() == True:
         None
     elif legalmove1() == False:
-        print("Olagligt drag, där står din pjäs redan. Försök igen")
+        clear_output(wait=True)
+        print("Olagligt drag. Försök igen")
         T -= 1
         continue
     
     Board[My, Mx] = P
     Board[Py, Px] = " "
+    clear_output(wait=True)
 
 # ---------------------------------------------------------------
