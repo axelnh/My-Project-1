@@ -13,9 +13,9 @@ SqCodeY = {"1":7, "2":6, "3":5, "4":4, "5":3, "6":2, "7":1, "8":0}
 
 def playerturn(arg1):
     if arg1 % 2 == 0:
-        return ("Black's turn: {} seconds remaining".format(bT))
+        return ("Svarts spelares tur: {} sekunder kvar".format(bT))
     if arg1 % 2 != 0:
-        return("White's turn: {} seconds remaining".format(wT))
+        return("Vit spelares tur: {} sekunder kvar".format(wT))
     
 def playertime(arg1):
     global wT
@@ -27,8 +27,8 @@ def playertime(arg1):
 
 # ---------------------------------------------------------------
 
- # denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG 
- # och så att den flyttade pjäsen inte passerar genom en annan pjäs
+# denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG...
+# ...eller så att pjäsen färdas ÖVER en annan pjäs
 
 def legalmove1():
     global P
@@ -36,27 +36,29 @@ def legalmove1():
     global My
     global Px
     global Py
+    global tP
+    
+    xdelta = (Mx - Px)
+    ydelta = (My - Py)
     
     if (Mx == Px) and (My == Py):
         return False
     
-    else:
-        if T % 2 == 0:
-            if tP in P2.values():
-                return False
-            else:
-                return True
-    
-        if T % 2 != 0:
-            if tP in P1.values():
-                return False
-            else:
-                return True
-    if P == "♖" or P == "♜" or P == "♕" or P == "♛":
-        if ((Mx != Px) and (My == Py)) or ((Mx == Px) and (My != Py)):
+    if T % 2 == 0:
+        if tP in P2.values():
+            return False
+        else:
+            None
             
-            xdelta = (Mx - Px)
-            ydelta = (My - Py)
+    if T % 2 != 0:
+        if tP in P1.values():
+            return False
+        else:
+            None
+    
+    if P == "♖" or P == "♜" or P == "♕" or P == "♛":
+        
+        if ((Mx != Px) and (My == Py)) or ((Mx == Px) and (My != Py)):
         
             if xdelta >= 2:
                 for i in range(xdelta):
@@ -66,15 +68,15 @@ def legalmove1():
                         return False
                     else:
                         None
-            if xdelta <= -2:
-                for i in range(xdelta):
+            elif xdelta <= -2:
+                for i in range(abs(xdelta)):
                     if i == 0:
                         continue
                     if Board[Py, (Px - i)] in (P1.values() or P2.values()):
                         return False
                     else:
                         None
-            if ydelta >= 2:
+            elif ydelta >= 2:
                 for i in range(ydelta):
                     if i == 0:
                         continue
@@ -82,56 +84,63 @@ def legalmove1():
                         return False
                     else:
                         None
-            if ydelta <= -2:
-                for i in range(ydelta):
+            elif ydelta <= -2:
+                for i in range(abs(ydelta)):
                     if i == 0:
                         continue
                     if Board[(Py - i), Px] in (P1.values() or P2.values()):
                         return False
                     else:
                         None
+            
+            else:
+                return True
+        
         else:
             None
+    
     if P == "♗" or P == "♝" or P == "♕" or P == "♛":
-        if ((Mx - Px) == (My - Py)):
-            
-            xdelta = (Mx - Px)
-            ydelta = (My - Py)
+        
+        if (abs(Mx - Px) == abs(My - Py)):
             
             if xdelta >= 2 and ydelta >= 2:
                 for i in range(xdelta):
                     if i == 0:
                         continue
-                    if Board[(Py + i), (Px + i)] in (P1.values() or P2.values()):
+                    if Board[(Py + i), (Px + i)] in (P1.values() or Board[(Py + i), (Px + i)] in P2.values()):
                         return False
                     else:
                         None
-            if xdelta >= 2 and ydelta <= -2:
+            elif xdelta >= 2 and ydelta <= -2:
                 for i in range(xdelta):
                     if i == 0:
                         continue
-                    if Board[(Py - i), (Px + i)] in (P1.values() or P2.values()):
+                    if Board[(Py - i), (Px + i)] in (P1.values() or Board[(Py - i), (Px + i)] in P2.values()):
                         return False
                     else:
                         None
-            if xdelta <= -2 and ydelta >= 2:
+            elif xdelta <= -2 and ydelta >= 2:
                 for i in range(ydelta):
                     if i == 0:
                         continue
-                    if Board[(Py + i), (Px - i)] in (P1.values() or P2.values()):
+                    if Board[(Py + i), (Px - i)] in (P1.values() or Board[(Py + i), (Px - i)] in P2.values()):
                         return False
                     else:
                         None
-            if xdelta <= -2 and ydelta <= -2:
+            elif xdelta <= -2 and ydelta <= -2:
                 for i in range(abs(xdelta)):
                     if i == 0:
                         continue
-                    if Board[(Py - i), (Px - i)] in (P1.values() or P2.values()):
+                    if Board[(Py - i), (Px - i)] in P1.values() or Board[(Py - i), (Px - i)] in P2.values():
                         return False
                     else:
                         None
+                        
+            else:
+                return True
+        
         else:
-            None
+            return False
 
 # ---------------------------------------------------------------
 
@@ -181,14 +190,6 @@ def legalmove2():
                 return False
             
     elif P == "♖" or P == "♜":
-        if ydelta <= -2:
-            for i in range(ydelta):
-                if i == 0:
-                    continue
-                if Board[(Py - i), Px] in (P1.values() or P2.values()):
-                    return False
-                else:
-                    None
         if (Mx != Px and My != Py) or (Mx == Px and My == Py):
             return False
         else:
@@ -234,60 +235,54 @@ def legalmove2():
 # skapar brädet och rutornas numreringar
 # --------------------------------------
 
-Board = np.full((8, 8), " ")
+def boardmaker():
+    
+    global Board
+    
+    Board = np.full((8, 8), " ")
 
-# skapar axlarna // vet fortfarande inte riktigt hur jag ska implementera dessa men har kvar dem här ändå
-X = np.full((1, 8), 0)
-Y = np.full((8, 1), 0)
-for i in range(8):
-    X[0, i] = i + 1
-    Y[i, 0] = i + 1
+    # skapar axlarna // vet fortfarande inte riktigt hur jag ska implementera dessa men har kvar dem här ändå
+    X = np.full((1, 8), 0)
+    Y = np.full((8, 1), 0)
+    for i in range(8):
+        X[0, i] = i + 1
+        Y[i, 0] = i + 1
 
-# placerar pjäserna
+    # placerar pjäserna
 
-for i in range(8):
-    Board[1, i] = P2["Pawn"]
-    Board[6, i] = P1["Pawn"]
+    for i in range(8):
+        Board[1, i] = P2["Pawn"]
+        Board[6, i] = P1["Pawn"]
 
-Board[0, 0] = P2["Rook"]
-Board[0, 7] = P2["Rook"]
+        Board[0, 0] = P2["Rook"]
+        Board[0, 7] = P2["Rook"]
 
-Board[0, 1] = P2["Knight"]
-Board[0, 6] = P2["Knight"]
+        Board[0, 1] = P2["Knight"]
+        Board[0, 6] = P2["Knight"]
 
-Board[0, 2] = P2["Bishop"]
-Board[0, 5] = P2["Bishop"]
+        Board[0, 2] = P2["Bishop"]
+        Board[0, 5] = P2["Bishop"]
 
-Board[0, 3] = P2["Queen"]
-Board[0, 4] = P2["King"]
+        Board[0, 3] = P2["Queen"]
+        Board[0, 4] = P2["King"]
 
-# -----------------
+        Board[7, 0] = P1["Rook"]
+        Board[7, 7] = P1["Rook"]
 
-Board[7, 0] = P1["Rook"]
-Board[7, 7] = P1["Rook"]
+        Board[7, 1] = P1["Knight"]
+        Board[7, 6] = P1["Knight"]
 
-Board[7, 1] = P1["Knight"]
-Board[7, 6] = P1["Knight"]
+        Board[7, 2] = P1["Bishop"]
+        Board[7, 5] = P1["Bishop"]
 
-Board[7, 2] = P1["Bishop"]
-Board[7, 5] = P1["Bishop"]
-
-Board[7, 3] = P1["Queen"]
-Board[7, 4] = P1["King"]
-
-# -----------------
-
-for i in range(4):
-    for j in range(8):
-        Board[i+2, j] = " "
-
-# -----------------
-
-print(Board)
+        Board[7, 3] = P1["Queen"]
+        Board[7, 4] = P1["King"]
 
 # ---------------------------------------------------------------
 
 # Här spelas spelet / flyttas pjäserna
+
+boardmaker()
 
 T = 0
 
@@ -333,6 +328,18 @@ while True:
         print("Olagligt drag. Försök igen")
         T -= 1
         continue
+        
+    if T % 2 == 0:
+        if tP == "♔":
+            clear_output(wait=True)
+            print("Svart Vinner!")
+            break
+            
+    if T % 2 != 0:
+        if tP == "♚":
+            clear_output(wait=True)
+            print("Vit Vinner!")
+            break
     
     Board[My, Mx] = P
     Board[Py, Px] = " "
