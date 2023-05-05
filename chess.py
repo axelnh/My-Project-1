@@ -1,8 +1,14 @@
 import numpy as np
 import time as time
+import os
+from IPython.display import clear_output
+from PIL import Image, ImageDraw, ImageEnhance
 
 P1 = {"Pawn" : "♙", "Rook" : "♖", "Knight" : "♘", "Bishop" : "♗", "King" : "♔", "Queen" : "♕" }
 P2 = {"Pawn" : "♟", "Rook" : "♜", "Knight" : "♞", "Bishop" : "♝", "King" : "♚", "Queen" : "♛" }
+
+PromoteDict1 = {"Torn" : "♖", "Häst" : "♘", "Löpare" : "♗", "Drottning" : "♕"}
+PromoteDict2 = {"Torn" : "♜", "Häst" : "♞", "Löpare" : "♝", "Drottning" : "♛"}
 
 # rutornas numrering i ett dictionary
 SqCodeX = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
@@ -27,8 +33,7 @@ def playertime(arg1):
 
 # ---------------------------------------------------------------
 
-# denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG...
-# ...eller så att pjäsen färdas ÖVER en annan pjäs
+ # denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG
 
 def legalmove1():
     global P
@@ -232,6 +237,25 @@ def legalmove2():
 
 # ---------------------------------------------------------------
 
+def promotecheck():
+    
+    global Py
+    global T
+    
+    if T % 2 == 0:
+        if My == 7:
+            return True
+        else:
+            return False
+    
+    if T % 2 != 0:
+        if My == 0:
+            return True
+        else:
+            return False
+
+# -----------------------------------
+
 # skapar brädet och rutornas numreringar
 # --------------------------------------
 
@@ -279,6 +303,15 @@ def boardmaker():
         Board[7, 4] = P1["King"]
 
 # ---------------------------------------------------------------
+
+def ChessBoardImg():
+    with Image.new("RGB", (850, 850), "lightgrey") as img:
+        img.save("ChessBoard.png")
+        img.show()
+        
+ChessBoardImg()
+
+# ---------------------------------
 
 # Här spelas spelet / flyttas pjäserna
 
@@ -329,20 +362,46 @@ while True:
         T -= 1
         continue
         
+    if P == "♙" or P == "♟":
+        promotecheck()
+        if promotecheck() == True:
+            print("Vilken pjäs ska bonden befordras till? : Häst, Löpare, Torn, Drottning")
+            PrmtI = input()
+            if T % 2 == 0:
+                Prmt = PromoteDict2[PrmtI]
+            if T % 2 == 0:
+                Prmt = PromoteDict1[PrmtI]
+            
+            Board[My, Mx] = Prmt
+            Board[Py, Px] = " "
+            
+        elif promotecheck() == False:
+            print("no promote")
+            
     if T % 2 == 0:
         if tP == "♔":
+            Board[My, Mx] = P
+            Board[Py, Px] = " "
             clear_output(wait=True)
+            print(Board)
             print("Svart Vinner!")
             break
             
     if T % 2 != 0:
         if tP == "♚":
+            Board[My, Mx] = P
+            Board[Py, Px] = " "
             clear_output(wait=True)
+            print(Board)
             print("Vit Vinner!")
             break
     
+    else:
+        None
+              
     Board[My, Mx] = P
     Board[Py, Px] = " "
+    
     clear_output(wait=True)
 
 # ---------------------------------------------------------------
