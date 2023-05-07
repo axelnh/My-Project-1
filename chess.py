@@ -14,6 +14,9 @@ PromoteDict2 = {"Torn" : "♜", "Häst" : "♞", "Löpare" : "♝", "Drottning" 
 SqCodeX = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
 SqCodeY = {"1":7, "2":6, "3":5, "4":4, "5":3, "6":2, "7":1, "8":0}
 
+# dictionary för boktstäverna jag har med i bilden på mitt schack-bräde
+LettersDict = {0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h"}
+
 # ---------------------------------------------------------------
 # Här beksrivs/tas fram vilken spelares tur det är
 
@@ -305,7 +308,41 @@ def boardmaker():
 # ---------------------------------------------------------------
 
 def ChessBoardImg():
-    with Image.new("RGB", (850, 850), "lightgrey") as img:
+    
+    global Board
+    global P
+    
+    with Image.new("RGB", (900, 900), "lightgrey") as img:
+        for Y in range(8):
+            for X in range(8):
+                for y in range(100):
+                    for x in range(100):
+                        if ((Y + 1) % 2 != 0) and ((X + 1) % 2 == 0):
+                            img.putpixel(((x + 50 + (100*X)), y + 50 + (100*Y)), (106, 161, 33))
+                        if ((Y + 1) % 2 == 0) and ((X + 1) % 2 != 0):
+                            img.putpixel(((x + 50 + (100*X)), y + 50 + (100*Y)), (106, 161, 33))
+                        else:
+                            continue
+        
+        for Z in range(2):
+            for Z1 in range(900):
+                for Z2 in range(50):
+                    img.putpixel((Z1, Z2 + (850*Z)), (0, 0, 0))
+                    img.putpixel((Z2 + (850*Z), Z1), (0, 0, 0))
+        
+        drawimg = ImageDraw.Draw(img)
+        
+        for i in range(8):
+            drawimg.text(((100 + 100*i), 25), LettersDict[i], fill=(255, 255, 255))
+            drawimg.text(((100 + 100*i), 875), LettersDict[i], fill=(255, 255, 255))
+            drawimg.text((25, (100 + 100*i)), str(8-i), fill=(255, 255, 255))
+            drawimg.text((875, (100 + 100*i)), str(i+1), fill=(255, 255, 255))
+            
+        """for i in range(8):
+            for j in range(8):
+                Piece = str(Board[i, j])
+                drawimg.text(((100 + (100*j)), 100 + (100*i)), Piece, fill=(255, 255, 255))"""
+        
         img.save("ChessBoard.png")
         img.show()
         
@@ -344,6 +381,16 @@ while True:
     
     P = Board[Py, Px]
     tP = Board[My, Mx]
+    
+    legalmove3()
+    if legalmove3() == True:
+        None
+    elif legalmove3() == False:
+        clear_output(wait=True)
+        print("Du kan inte flytta en motståndarpjäs. Försök igen")
+        T -= 1
+        continue
+    
     legalmove2()
     if legalmove2() == True:
         None
@@ -369,11 +416,12 @@ while True:
             PrmtI = input()
             if T % 2 == 0:
                 Prmt = PromoteDict2[PrmtI]
-            if T % 2 == 0:
+            if T % 2 != 0:
                 Prmt = PromoteDict1[PrmtI]
-            
             Board[My, Mx] = Prmt
             Board[Py, Px] = " "
+            clear_output(wait=True)
+            continue
             
         elif promotecheck() == False:
             print("no promote")
