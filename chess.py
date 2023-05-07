@@ -17,6 +17,9 @@ SqCodeY = {"1":7, "2":6, "3":5, "4":4, "5":3, "6":2, "7":1, "8":0}
 # dictionary för boktstäverna jag har med i bilden på mitt schack-bräde
 LettersDict = {0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h"}
 
+# dictionary för att koppla pjäser till dess korresponderande bilder sparade på jupyter
+PiecesImgDict = {"♙" : "WhP.png", "♟" : "BlP.png", "♖" : "WhR.png", "♜" : "BlR.png", "♘" : "WhKn.png", "♞" : "BlKn.png", 
+                 "♗" : "WhB.png", "♝" : "BlB.png", "♔" : "WhK.png", "♚" : "BlK.png", "♕" : "WhQ.png", "♛" : "BlQ.png"}
 # ---------------------------------------------------------------
 # Här beksrivs/tas fram vilken spelares tur det är
 
@@ -319,7 +322,7 @@ def ChessBoardImg():
                     for x in range(100):
                         if ((Y + 1) % 2 != 0) and ((X + 1) % 2 == 0):
                             img.putpixel(((x + 50 + (100*X)), y + 50 + (100*Y)), (106, 161, 33))
-                        if ((Y + 1) % 2 == 0) and ((X + 1) % 2 != 0):
+                        elif ((Y + 1) % 2 == 0) and ((X + 1) % 2 != 0):
                             img.putpixel(((x + 50 + (100*X)), y + 50 + (100*Y)), (106, 161, 33))
                         else:
                             continue
@@ -337,22 +340,43 @@ def ChessBoardImg():
             drawimg.text(((100 + 100*i), 875), LettersDict[i], fill=(255, 255, 255))
             drawimg.text((25, (100 + 100*i)), str(8-i), fill=(255, 255, 255))
             drawimg.text((875, (100 + 100*i)), str(i+1), fill=(255, 255, 255))
-            
-        """for i in range(8):
-            for j in range(8):
-                Piece = str(Board[i, j])
-                drawimg.text(((100 + (100*j)), 100 + (100*i)), Piece, fill=(255, 255, 255))"""
         
         img.save("ChessBoard.png")
-        img.show()
+
+# ---------------------------------
+
+def BoardPieces():
+    
+    global Board
+    
+    with Image.open("ChessBoard.png") as img:
         
-ChessBoardImg()
+        for i in range(8):
+            for j in range(8):
+                Piece = Board[i, j]
+                if Piece not in P1.values() and Piece not in P2.values():
+                    for y in range(100):
+                        for x in range(100):
+                            if ((i + 1) % 2 != 0) and ((j + 1) % 2 == 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
+                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 != 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
+                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 == 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
+                            elif ((i + 1) % 2 != 0) and ((j + 1) % 2 != 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
+                else:
+                    PieceImgLink = str(PiecesImgDict[Piece])
+                    PieceImg = Image.open(PieceImgLink)
+                    img.paste(PieceImg, (50 + j + (100*j), 50 + i + (100*i)), PieceImg)
+        img.save("ChessBoard.png")
 
 # ---------------------------------
 
 # Här spelas spelet / flyttas pjäserna
 
 boardmaker()
+ChessBoardImg()
 
 T = 0
 
@@ -360,7 +384,11 @@ wT = 600
 bT = 600
 
 while True:
-    print(Board)
+    
+    BoardPieces()
+    BoardImage = Image.open("ChessBoard.png")
+    BoardImage.show()
+    
     start = time.time()
     T += 1
     print(playerturn(T))
@@ -424,14 +452,14 @@ while True:
             continue
             
         elif promotecheck() == False:
-            print("no promote")
+            None
             
     if T % 2 == 0:
         if tP == "♔":
             Board[My, Mx] = P
             Board[Py, Px] = " "
             clear_output(wait=True)
-            print(Board)
+            BoardImage.show()
             print("Svart Vinner!")
             break
             
@@ -440,7 +468,7 @@ while True:
             Board[My, Mx] = P
             Board[Py, Px] = " "
             clear_output(wait=True)
-            print(Board)
+            BoardImage.show()
             print("Vit Vinner!")
             break
     
