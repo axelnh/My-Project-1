@@ -1,45 +1,95 @@
+# -----------------------------------------------------------------¨
+
+# Denna kernel har hand om mina imports och dictionaries, detta för att hålla dem organiserade. 
+
 import numpy as np
 import time as time
 import os
 from IPython.display import clear_output
-from PIL import Image, ImageDraw, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont
+import math
 
+    # Dessa dictionaries har hand om de två sidornas pjäser och används bl.a vid utplacering av pjäser och för att checka vilket lag en viss pjäs tillhör.
+    # ((Egentligen hade jag lika gärna kunnat ha en vanlig lista över dessa och hade ingen anledning till att göra ett dictionary av det, ...
+    # ... men då det nu redan är gjort och inte spelar så stor roll + att det skulle kunna användas till något ifall jag vill bygga ut fler funktioner i mitt spel. SÅ låter jag den vara.))
 P1 = {"Pawn" : "♙", "Rook" : "♖", "Knight" : "♘", "Bishop" : "♗", "King" : "♔", "Queen" : "♕" }
 P2 = {"Pawn" : "♟", "Rook" : "♜", "Knight" : "♞", "Bishop" : "♝", "King" : "♚", "Queen" : "♛" }
 
+    # Dessa dictionaries har hand om de pjäser en bonde kan promotas till.
 PromoteDict1 = {"Torn" : "♖", "Häst" : "♘", "Löpare" : "♗", "Drottning" : "♕"}
 PromoteDict2 = {"Torn" : "♜", "Häst" : "♞", "Löpare" : "♝", "Drottning" : "♛"}
 
-# rutornas numrering i ett dictionary
+    # Dessa dictionaries har hand om "kodningen" för rutorna och dess korresponderande plats i arrayen, d.v.s "a2" = "0, 6" // "e5" = "4, 3"
 SqCodeX = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
 SqCodeY = {"1":7, "2":6, "3":5, "4":4, "5":3, "6":2, "7":1, "8":0}
 
-# dictionary för boktstäverna jag har med i bilden på mitt schack-bräde
+    # Detta dictionary har hand om bokstäverna som placeras ut på brädets (bilden) ram. Den är i princip identiskt med dictionary (SqCodeX) men dess keys och values har bytt plats...
+    # , anledningen till att jag gjorde ett nytt för detta var för läsbarhet och min egen skull (lättare att förstå)
 LettersDict = {0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h"}
 
-# dictionary för att koppla pjäser till dess korresponderande bilder sparade på jupyter
+    # Detta dictionary används för att koppla pjäserna på i arrayen till pjäsernas korresponderande bilder som ska användas på spelbrädet (bilden).
+    # Pjäsernas bilder har varsitt specifikt namn som måste kallas i en viss for loop när bilderna ska klistras in på brädets bild, detta dictionary gör just det möjligt.
 PiecesImgDict = {"♙" : "WhP.png", "♟" : "BlP.png", "♖" : "WhR.png", "♜" : "BlR.png", "♘" : "WhKn.png", "♞" : "BlKn.png", 
                  "♗" : "WhB.png", "♝" : "BlB.png", "♔" : "WhK.png", "♚" : "BlK.png", "♕" : "WhQ.png", "♛" : "BlQ.png"}
-# ---------------------------------------------------------------
-# Här beksrivs/tas fram vilken spelares tur det är
 
-def playerturn(arg1):
-    if arg1 % 2 == 0:
-        return ("Svarts spelares tur: {} sekunder kvar".format(bT))
-    if arg1 % 2 != 0:
-        return("Vit spelares tur: {} sekunder kvar".format(wT))
+# ---------------------------------------------------------------
+
+    # Denna funtkion tar fram vilken spelares tur det är, vit eller svart. Denna returnar även vilken tid den spelaren har kvar, genom variabler skapade i de 2 nästkommande funktioner.
+
+def playerturn():
     
-def playertime(arg1):
+    global T
+    
+    if T % 2 == 0:
+        return ("Svart spelares tur: {}:{} tid kvar".format(bTMin, bTSec))
+    if T % 2 != 0:
+        return("Vit spelares tur: {}:{} tid kvar".format(wTMin, wTSec))
+    
+    # Denna funktion räknar ut i sekunder vilken tid varje spelare har kvar.
+
+def playertime():
+    
+    global T
     global wT
     global bT
-    if arg1 % 2 == 0:
+    
+    if T % 2 == 0:
         bT -= TotTime
-    if arg1 % 2 != 0:
+    if T % 2 != 0:
         wT -= TotTime
+        
+    # Denna funktion konverterar tiden framtagen i ovanstående funktion, från sekunder till minuter och sekunder (format: "xx:xx"). Den gör minutrarna till en variabel och sekundrarna till en annan.
+
+def converttime():
+    
+    global wT
+    global wTMin
+    global wTSec
+    global bT
+    global bTMin
+    global bTSec
+    
+    bTMin = math.floor(bT/60)
+    bTSec = round(((bT/60) - (bTMin)) * 60)
+    if bTSec < 10:
+        bTSec = str(bTSec)
+        bTSec = "0"+bTSec
+    else:
+        None
+    
+    wTMin = math.floor(wT/60)
+    wTSec = round(((wT/60) - (wTMin)) * 60)
+    if wTSec < 10:
+        wTSec = str(wTSec)
+        wTSec = "0"+wTSec
+    else:
+        None
 
 # ---------------------------------------------------------------
 
- # denna del ska kolla så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG
+# Här kollar funktionen så att draget inte landar pjäsen på en ruta med en pjäs AV SAMMA FÄRG och...
+# ... så att den flyttade pjäsen inte passerar genom en pjäs och...
+# ... så att den flyttade pjäsen faktiskt flyttas någonstans och inte står kvar där den startade
 
 def legalmove1():
     global P
@@ -61,7 +111,7 @@ def legalmove1():
         else:
             None
             
-    if T % 2 != 0:
+    elif T % 2 != 0:
         if tP in P1.values():
             return False
         else:
@@ -110,7 +160,7 @@ def legalmove1():
         else:
             None
     
-    if P == "♗" or P == "♝" or P == "♕" or P == "♛":
+    elif P == "♗" or P == "♝" or P == "♕" or P == "♛":
         
         if (abs(Mx - Px) == abs(My - Py)):
             
@@ -155,7 +205,7 @@ def legalmove1():
 
 # ---------------------------------------------------------------
 
-# denna del ska kolla så att själva draget är lagligt
+# Denna funktion kollar och bestämmer ifall ett drags förflyttning är lagligt
 
 def legalmove2():
     global P
@@ -242,10 +292,13 @@ def legalmove2():
         return False
 
 # ---------------------------------------------------------------
+    
+# Denna funtkion ska kolla ifall en pjäs har nått sista raden på brädet (relativt till vart den startade d.v.s vit pjäs eller svart pjäs)...
+# ... för att sedan kunna promotas (alltså att pjäsen byts ut mot en pjäs (inte bonde eller kung))
 
 def promotecheck():
     
-    global Py
+    global My
     global T
     
     if T % 2 == 0:
@@ -262,8 +315,7 @@ def promotecheck():
 
 # -----------------------------------
 
-# skapar brädet och rutornas numreringar
-# --------------------------------------
+# Denna funktion skapar brädet och rutornas numreringar, den placerar även ut pjäserna. Ifall en match har spelats använts bl.a funktionen till att "reseta" brädet.
 
 def boardmaker():
     
@@ -271,14 +323,7 @@ def boardmaker():
     
     Board = np.full((8, 8), " ")
 
-    # skapar axlarna // vet fortfarande inte riktigt hur jag ska implementera dessa men har kvar dem här ändå
-    X = np.full((1, 8), 0)
-    Y = np.full((8, 1), 0)
-    for i in range(8):
-        X[0, i] = i + 1
-        Y[i, 0] = i + 1
-
-    # placerar pjäserna
+    # Här placeras pjäserna
 
     for i in range(8):
         Board[1, i] = P2["Pawn"]
@@ -310,11 +355,14 @@ def boardmaker():
 
 # ---------------------------------------------------------------
 
+# Denna funktion gör brädet till en bild som man kan spela på (istället för en array). 
+
 def ChessBoardImg():
     
     global Board
     global P
     
+    # Här skapas brädet och dess rutor
     with Image.new("RGB", (900, 900), "lightgrey") as img:
         for Y in range(8):
             for X in range(8):
@@ -327,23 +375,31 @@ def ChessBoardImg():
                         else:
                             continue
         
+        # Här skapas ramen kring brädet och axel-numreringarna (d.v.s a,b,c... och 1,2,3...) 
         for Z in range(2):
             for Z1 in range(900):
                 for Z2 in range(50):
                     img.putpixel((Z1, Z2 + (850*Z)), (0, 0, 0))
                     img.putpixel((Z2 + (850*Z), Z1), (0, 0, 0))
         
-        drawimg = ImageDraw.Draw(img)
+        borderimg = ImageDraw.Draw(img)
+        borderfont = ImageFont.truetype("Castoro-Regular.ttf", 30)
         
         for i in range(8):
-            drawimg.text(((100 + 100*i), 25), LettersDict[i], fill=(255, 255, 255))
-            drawimg.text(((100 + 100*i), 875), LettersDict[i], fill=(255, 255, 255))
-            drawimg.text((25, (100 + 100*i)), str(8-i), fill=(255, 255, 255))
-            drawimg.text((875, (100 + 100*i)), str(i+1), fill=(255, 255, 255))
+            borderimg.text(((90 + 100*i), 10), LettersDict[i], fill=(255, 255, 255), font=borderfont)
+            borderimg.text(((90 + 100*i), 860), LettersDict[i], fill=(255, 255, 255), font=borderfont)
+            borderimg.text((20, (85 + 100*i)), str(8-i), fill=(255, 255, 255), font=borderfont)
+            borderimg.text((870, (85 + 100*i)), str(i+1), fill=(255, 255, 255), font=borderfont)
         
         img.save("ChessBoard.png")
 
 # ---------------------------------
+
+# Denna funktion placerar ut pjäserna och är den som uppdaterar pjäsernas position efter ett drag. Detta görs genom att iterera över hela brädet och...
+# ... kolla vart det står pjäser och vad för pjäser det är. 
+    
+    # ((Jag tror att jag kan optimisera denna något genom att göra så att den endast kollar de rutor som har påverkats under draget...
+    #, d.v.s rutan där pjäsen som flyttades stod på och rutan den flyttades till.))
 
 def BoardPieces():
     
@@ -366,50 +422,80 @@ def BoardPieces():
                             elif ((i + 1) % 2 != 0) and ((j + 1) % 2 != 0):
                                 img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
                 else:
+                    for y in range(100):
+                        for x in range(100):
+                            if ((i + 1) % 2 != 0) and ((j + 1) % 2 == 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
+                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 != 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
+                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 == 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
+                            elif ((i + 1) % 2 != 0) and ((j + 1) % 2 != 0):
+                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
                     PieceImgLink = str(PiecesImgDict[Piece])
                     PieceImg = Image.open(PieceImgLink)
-                    img.paste(PieceImg, (50 + j + (100*j), 50 + i + (100*i)), PieceImg)
+                    img.paste(PieceImg, (50 + (100*j), 50 + (100*i)), PieceImg)
         img.save("ChessBoard.png")
 
 # ---------------------------------
 
-# Här spelas spelet / flyttas pjäserna
+# I denna kernel och While loop spelas själva spelet, här kallas de olika funktionerna och spelet påverkas beroende på vad funktionerna returnar.
 
+    # Här kallas 2 funktioner för att reseta brädets array (som har hand om reglerna) och brädets bild.
 boardmaker()
 ChessBoardImg()
 
+    # Här bestäms / resetas variabeln som har hand om vems tur det är (rond-nummer)
 T = 0
 
+    # Här bestäms / resetas varaiblerna som har hand om hur mycket tid varje spelare har på sig.
 wT = 600
 bT = 600
 
+    # här startas loopen som ÄR spelet.
 while True:
     
+        # Här öppnas det skapade schack-brädet och uppdateras efter hur schack-brädet ser just nu.
     BoardPieces()
     BoardImage = Image.open("ChessBoard.png")
     BoardImage.show()
+
+        # Här konverteras den återstående tiden till min:sek
+    converttime()
     
+        # Här startas timern som används vid tids-bestämning och vems tur det är printas
     start = time.time()
     T += 1
-    print(playerturn(T))
+    print(playerturn())
         
+        # Här frågas spelaren vilken pjäs (positionen för pjäsen) som ska flyttas, och variablerna för start-postionen bestäms.
     print("Vilken pjäs ska du flytta?")
     Pp1 = [*input()]
     Px = int(SqCodeX[Pp1[0]])
     Py = int(SqCodeY[Pp1[1]])
-    
+
+        # Här frågas spelaren vart pjäsen ska flyttas, och variablerna för flytt-positionen bestäms.
     print("Vart ska pjäsen flyttas?")
     Pp2 = [*input()]
     Mx = int(SqCodeX[Pp2[0]])
     My = int(SqCodeY[Pp2[1]])
     
+        # Här stannas tiden / timern och kvarstående tid beräknas. Här kollas även ifall tiden har gått under 0, d.v.s gått ut och spelaren vars tid gick ut förlorar.
     end = time.time()
     TotTime = int(end - start)
-    playertime(T)
+    playertime()
+    if bT <= 0:
+        print("Tiden är ute för svart spelare. Vit spelare vinner!")
+    elif wT <= 0:
+        print("Tiden är ute för vit spelare. Svart spelare vinner!")
+    else:
+        None
     
+        # Här bestäms vad för pjäs som flyttas och vad för pjäs (eller "tomhet") som pjäsen flyttas till.
     P = Board[Py, Px]
     tP = Board[My, Mx]
     
+        # De 3 nästkommande funktionerna kollar ifall draget är lagligt.
     legalmove3()
     if legalmove3() == True:
         None
@@ -419,12 +505,13 @@ while True:
         T -= 1
         continue
     
+
     legalmove2()
     if legalmove2() == True:
         None
     elif legalmove2() == False:
         clear_output(wait=True)
-        print("Olagligt drag. Försök igen")
+        print("Olagligt drag. Försök igen. ")
         T -= 1
         continue
 
@@ -433,10 +520,11 @@ while True:
         None
     elif legalmove1() == False:
         clear_output(wait=True)
-        print("Olagligt drag. Försök igen")
+        print("Olagligt drag. Försök igen. ")
         T -= 1
         continue
-        
+
+        # Här kollas ifall den flyttade pjäsen är en bonde och om den ska promotas, och isåfall vad för pjäs den ska promotas till.
     if P == "♙" or P == "♟":
         promotecheck()
         if promotecheck() == True:
@@ -453,14 +541,20 @@ while True:
             
         elif promotecheck() == False:
             None
-            
+
+        # Här kollas ifall någon spelare har tagit en kung, d.v.s vunnit, och isåfall vinner den spelaren.
+        # ((Egentligen tar man aldrig kungen i schack men då det var svårt att koda det "riktiga sättet", speciellt p.g.a hur jag har skrivit min kod, fick det här duga.))        
     if T % 2 == 0:
         if tP == "♔":
             Board[My, Mx] = P
             Board[Py, Px] = " "
             clear_output(wait=True)
+            
+            BoardPieces()
+            BoardImage = Image.open("ChessBoard.png")
             BoardImage.show()
-            print("Svart Vinner!")
+            
+            print("Svart spelare vinner!")
             break
             
     if T % 2 != 0:
@@ -468,13 +562,18 @@ while True:
             Board[My, Mx] = P
             Board[Py, Px] = " "
             clear_output(wait=True)
+            
+            BoardPieces()
+            BoardImage = Image.open("ChessBoard.png")
             BoardImage.show()
-            print("Vit Vinner!")
+            
+            print("Vit spelare vinner!")
             break
     
     else:
         None
-              
+
+        # Efter att draget är bekräftat görs själva draget här.          
     Board[My, Mx] = P
     Board[Py, Px] = " "
     
