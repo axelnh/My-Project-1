@@ -213,8 +213,15 @@ def legalmove2():
     global My
     global Px
     global Py
+    global LastMoveY
+    global LastMoveX
     
     if P == "♙":
+        enpassentcheck()
+        if enpassentcheck() == True:
+            if ((Mx == Px + 1) or (Mx == Px - 1)) and (My == Py - 1):
+                Board[LastMoveY, LastMoveX] = " "
+                return True
         if Py == 6:
             if (Board[(Py - 1), Px] in P1.values()) or (Board[(Py - 1), Px] in P2.values()):
                 return False
@@ -233,6 +240,11 @@ def legalmove2():
                 return False
             
     elif P == "♟":
+        enpassentcheck()
+        if enpassentcheck() == True:
+            if ((Mx == Px + 1) or (Mx == Px - 1)) and (My == Py + 1):
+                Board[LastMoveY, LastMoveX] = " "
+                return True
         if Py == 1:
             if (Board[(Py + 1), Px] in P1.values()) or (Board[(Py + 1), Px] in P2.values()):
                 return False
@@ -315,6 +327,32 @@ def promotecheck():
 
 # -----------------------------------
 
+def enpassentcheck():
+    
+    global T
+    global P
+    global Px
+    global Py
+    
+    global LastPiece
+    global LastMoveX
+    global LastMoveY
+    
+    if T % 2 == 0:
+        if P == "♟" and Py == 3:
+            if (LastPiece == "♙") and ((LastMoveX == Px + 1) or (LastMoveX == Px - 1)) and LastMoveY == 3:
+                return True
+            else:
+                return False
+    if T % 2 != 0:
+        if P == "♙" and Py == 4:
+            if (LastPiece == "♟") and ((LastMoveX == Px + 1) or (LastMoveX == Px - 1)) and LastMoveY == 4:
+                return True
+            else:
+                return False
+
+# --------------------------------
+
 # Denna funktion skapar brädet och rutornas numreringar, den placerar även ut pjäserna. Ifall en match har spelats använts bl.a funktionen till att "reseta" brädet.
 
 def boardmaker():
@@ -355,14 +393,11 @@ def boardmaker():
 
 # ---------------------------------------------------------------
 
-# Denna funktion gör brädet till en bild som man kan spela på (istället för en array). 
-
 def ChessBoardImg():
     
     global Board
     global P
     
-    # Här skapas brädet och dess rutor
     with Image.new("RGB", (900, 900), "lightgrey") as img:
         for Y in range(8):
             for X in range(8):
@@ -375,7 +410,6 @@ def ChessBoardImg():
                         else:
                             continue
         
-        # Här skapas ramen kring brädet och axel-numreringarna (d.v.s a,b,c... och 1,2,3...) 
         for Z in range(2):
             for Z1 in range(900):
                 for Z2 in range(50):
@@ -397,9 +431,6 @@ def ChessBoardImg():
 
 # Denna funktion placerar ut pjäserna och är den som uppdaterar pjäsernas position efter ett drag. Detta görs genom att iterera över hela brädet och...
 # ... kolla vart det står pjäser och vad för pjäser det är. 
-    
-    # ((Jag tror att jag kan optimisera denna något genom att göra så att den endast kollar de rutor som har påverkats under draget...
-    #, d.v.s rutan där pjäsen som flyttades stod på och rutan den flyttades till.))
 
 def BoardPieces():
     
@@ -410,77 +441,84 @@ def BoardPieces():
         for i in range(8):
             for j in range(8):
                 Piece = Board[i, j]
-                if Piece not in P1.values() and Piece not in P2.values():
-                    for y in range(100):
-                        for x in range(100):
-                            if ((i + 1) % 2 != 0) and ((j + 1) % 2 == 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
-                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 != 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
-                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 == 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
-                            elif ((i + 1) % 2 != 0) and ((j + 1) % 2 != 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
-                else:
-                    for y in range(100):
-                        for x in range(100):
-                            if ((i + 1) % 2 != 0) and ((j + 1) % 2 == 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
-                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 != 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (106, 161, 33))
-                            elif ((i + 1) % 2 == 0) and ((j + 1) % 2 == 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
-                            elif ((i + 1) % 2 != 0) and ((j + 1) % 2 != 0):
-                                img.putpixel(((x + 50 + (100*j)), y + 50 + (100*i)), (211, 211, 211))
-                    PieceImgLink = str(PiecesImgDict[Piece])
-                    PieceImg = Image.open(PieceImgLink)
-                    img.paste(PieceImg, (50 + (100*j), 50 + (100*i)), PieceImg)
+                if Piece == " ":
+                    continue
+                PieceImgLink = str(PiecesImgDict[Piece])
+                PieceImg = Image.open(PieceImgLink)
+                img.paste(PieceImg, (50 + (100*j), 50 + (100*i)), PieceImg)
         img.save("ChessBoard.png")
 
 # ---------------------------------
 
-# I denna kernel och While loop spelas själva spelet, här kallas de olika funktionerna och spelet påverkas beroende på vad funktionerna returnar.
+def BoardPiecesUpdate():
+    
+    global Board
+    global Py
+    global Px
+    global My
+    global Mx
+    
+    if T == 0:
+        return None
+    
+    Piece = Board[My, Mx]
+    
+    with Image.open("ChessBoard.png") as img:
+        
+        if ((Py + 1) % 2 != 0) and ((Px + 1) % 2 == 0) or ((Py + 1) % 2 == 0) and ((Px + 1) % 2 != 0):
+            colour1 = (106, 161, 33)
+        elif ((Py + 1) % 2 == 0) and ((Px + 1) % 2 == 0) or ((Py + 1) % 2 != 0) and ((Px + 1) % 2 != 0):
+            colour1 = (211, 211, 211)
+        if ((My + 1) % 2 != 0) and ((Mx + 1) % 2 == 0) or ((My + 1) % 2 == 0) and ((Mx + 1) % 2 != 0):
+            colour2 = (106, 161, 33)
+        elif ((My + 1) % 2 == 0) and ((Mx + 1) % 2 == 0) or ((My + 1) % 2 != 0) and ((Mx + 1) % 2 != 0):
+            colour2 = (211, 211, 211)
+                
+        for y in range(100):
+            for x in range(100):
+                img.putpixel(((x + 50 + (100*Px)), y + 50 + (100*Py)), (colour1))
+                
+                img.putpixel(((x + 50 + (100*Mx)), y + 50 + (100*My)), (colour2))
+        
+        PieceImgLink = str(PiecesImgDict[Piece])
+        PieceImg = Image.open(PieceImgLink)
+        img.paste(PieceImg, (50 + (100*Mx), 50 + (100*My)), PieceImg)
+        img.save("ChessBoard.png")
 
-    # Här kallas 2 funktioner för att reseta brädets array (som har hand om reglerna) och brädets bild.
+# -------------------------------------
+
+# Här spelas spelet / flyttas pjäserna
+
 boardmaker()
 ChessBoardImg()
+BoardPieces()
 
-    # Här bestäms / resetas variabeln som har hand om vems tur det är (rond-nummer)
 T = 0
 
-    # Här bestäms / resetas varaiblerna som har hand om hur mycket tid varje spelare har på sig.
 wT = 600
 bT = 600
 
-    # här startas loopen som ÄR spelet.
 while True:
     
-        # Här öppnas det skapade schack-brädet och uppdateras efter hur schack-brädet ser just nu.
-    BoardPieces()
     BoardImage = Image.open("ChessBoard.png")
     BoardImage.show()
-
-        # Här konverteras den återstående tiden till min:sek
+    
     converttime()
     
-        # Här startas timern som används vid tids-bestämning och vems tur det är printas
     start = time.time()
     T += 1
     print(playerturn())
         
-        # Här frågas spelaren vilken pjäs (positionen för pjäsen) som ska flyttas, och variablerna för start-postionen bestäms.
     print("Vilken pjäs ska du flytta?")
     Pp1 = [*input()]
     Px = int(SqCodeX[Pp1[0]])
     Py = int(SqCodeY[Pp1[1]])
-
-        # Här frågas spelaren vart pjäsen ska flyttas, och variablerna för flytt-positionen bestäms.
+    
     print("Vart ska pjäsen flyttas?")
     Pp2 = [*input()]
     Mx = int(SqCodeX[Pp2[0]])
     My = int(SqCodeY[Pp2[1]])
     
-        # Här stannas tiden / timern och kvarstående tid beräknas. Här kollas även ifall tiden har gått under 0, d.v.s gått ut och spelaren vars tid gick ut förlorar.
     end = time.time()
     TotTime = int(end - start)
     playertime()
@@ -491,11 +529,9 @@ while True:
     else:
         None
     
-        # Här bestäms vad för pjäs som flyttas och vad för pjäs (eller "tomhet") som pjäsen flyttas till.
     P = Board[Py, Px]
     tP = Board[My, Mx]
     
-        # De 3 nästkommande funktionerna kollar ifall draget är lagligt.
     legalmove3()
     if legalmove3() == True:
         None
@@ -505,13 +541,12 @@ while True:
         T -= 1
         continue
     
-
     legalmove2()
     if legalmove2() == True:
         None
     elif legalmove2() == False:
         clear_output(wait=True)
-        print("Olagligt drag. Försök igen. ")
+        print("Olagligt drag. Försök igen. 111")
         T -= 1
         continue
 
@@ -520,11 +555,10 @@ while True:
         None
     elif legalmove1() == False:
         clear_output(wait=True)
-        print("Olagligt drag. Försök igen. ")
+        print("Olagligt drag. Försök igen. 222")
         T -= 1
         continue
-
-        # Här kollas ifall den flyttade pjäsen är en bonde och om den ska promotas, och isåfall vad för pjäs den ska promotas till.
+        
     if P == "♙" or P == "♟":
         promotecheck()
         if promotecheck() == True:
@@ -541,9 +575,7 @@ while True:
             
         elif promotecheck() == False:
             None
-
-        # Här kollas ifall någon spelare har tagit en kung, d.v.s vunnit, och isåfall vinner den spelaren.
-        # ((Egentligen tar man aldrig kungen i schack men då det var svårt att koda det "riktiga sättet", speciellt p.g.a hur jag har skrivit min kod, fick det här duga.))        
+            
     if T % 2 == 0:
         if tP == "♔":
             Board[My, Mx] = P
@@ -572,10 +604,15 @@ while True:
     
     else:
         None
-
-        # Efter att draget är bekräftat görs själva draget här.          
+              
     Board[My, Mx] = P
     Board[Py, Px] = " "
+    
+    LastPiece = P
+    LastMoveX = Mx
+    LastMoveY = My
+    
+    BoardPiecesUpdate()
     
     clear_output(wait=True)
 
