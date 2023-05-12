@@ -205,7 +205,7 @@ def legalmove1():
 
 # ---------------------------------------------------------------
 
-# Denna funktion kollar och bestämmer ifall ett drags förflyttning är lagligt
+# denna del ska kolla så att själva draget är lagligt
 
 def legalmove2():
     global P
@@ -215,14 +215,19 @@ def legalmove2():
     global Py
     global LastMoveY
     global LastMoveX
+    global enpassent
+    
+    enpassent = False
     
     if P == "♙":
         enpassentcheck()
         if enpassentcheck() == True:
             if ((Mx == Px + 1) or (Mx == Px - 1)) and (My == Py - 1):
-                Board[LastMoveY, LastMoveX] = " "
+                enpassent = True
                 return True
-        if Py == 6:
+            else:
+                return False
+        elif Py == 6:
             if (Board[(Py - 1), Px] in P1.values()) or (Board[(Py - 1), Px] in P2.values()):
                 return False
             elif (My == Py - 1 and Mx == Px) or (My == Py - 2 and Mx == Px):
@@ -231,7 +236,7 @@ def legalmove2():
                 return True
             else:
                 return False
-        if Py != 6:
+        elif Py != 6:
             if (My == Py - 1 and Mx == Px):
                 return True
             elif ((My == Py - 1 and Mx == Px + 1) or (My == Py - 1 and Mx == Px - 1)) and tP in P2.values():
@@ -243,9 +248,11 @@ def legalmove2():
         enpassentcheck()
         if enpassentcheck() == True:
             if ((Mx == Px + 1) or (Mx == Px - 1)) and (My == Py + 1):
-                Board[LastMoveY, LastMoveX] = " "
+                enpassent = True
                 return True
-        if Py == 1:
+            else:
+                return False
+        elif Py == 1:
             if (Board[(Py + 1), Px] in P1.values()) or (Board[(Py + 1), Px] in P2.values()):
                 return False
             elif (My == Py + 1 and Mx == Px) or (My == Py + 2 and Mx == Px):
@@ -254,7 +261,7 @@ def legalmove2():
                 return True
             else:
                 return False
-        if Py != 1:
+        elif Py != 1:
             if (My == Py + 1 and Mx == Px):
                 return True
             elif ((My == Py + 1 and Mx == Px + 1) or (My == Py + 1 and Mx == Px - 1)) and tP in P1.values():
@@ -339,17 +346,46 @@ def enpassentcheck():
     global LastMoveY
     
     if T % 2 == 0:
-        if P == "♟" and Py == 3:
-            if (LastPiece == "♙") and ((LastMoveX == Px + 1) or (LastMoveX == Px - 1)) and LastMoveY == 3:
+        if P == "♟" and Py == 4:
+            if (LastPiece == "♙") and ((LastMoveX == Px + 1) or (LastMoveX == Px - 1)) and LastMoveY == 4:
                 return True
             else:
                 return False
     if T % 2 != 0:
-        if P == "♙" and Py == 4:
-            if (LastPiece == "♟") and ((LastMoveX == Px + 1) or (LastMoveX == Px - 1)) and LastMoveY == 4:
+        if P == "♙" and Py == 3:
+            if (LastPiece == "♟") and ((LastMoveX == Px + 1) or (LastMoveX == Px - 1)) and LastMoveY == 3:
                 return True
             else:
                 return False
+
+# --------------------------------
+
+def towercheck():
+    global WQMoves
+    global BQMoves
+    global WR1Moves
+    global WR2Moves
+    global BR1Moves
+    global BR2Moves
+    
+    if P == "♕":
+        WQMoves += 1
+    if P == "♛":
+        BQMoves += 1
+    if Py == 7 and Px == 0:
+        WR1Moves += 1
+    if Py == 7 and Px == 7:
+        WR2Moves += 1
+    if Py == 0 and Px == 0:
+        BR1Moves += 1
+    if Py == 0 and Px == 7:
+        BR2Moves += 1
+
+# --------------------------------
+
+def towerlegal():
+    if P == "♕":
+        if My == 7 and Mx == 
 
 # --------------------------------
 
@@ -458,9 +494,6 @@ def BoardPiecesUpdate():
     global My
     global Mx
     
-    if T == 0:
-        return None
-    
     Piece = Board[My, Mx]
     
     with Image.open("ChessBoard.png") as img:
@@ -487,6 +520,25 @@ def BoardPiecesUpdate():
 
 # -------------------------------------
 
+def enpassentupdate():
+    global Board
+    global LastMoveY
+    global LastMoveX
+    
+    with Image.open("ChessBoard.png") as img:
+        
+        if ((LastMoveY + 1) % 2 != 0) and ((LastMoveX + 1) % 2 == 0) or ((LastMoveY + 1) % 2 == 0) and ((LastMoveX + 1) % 2 != 0):
+            colour1 = (106, 161, 33)
+        elif ((LastMoveY + 1) % 2 == 0) and ((LastMoveX + 1) % 2 == 0) or ((LastMoveY + 1) % 2 != 0) and ((LastMoveX + 1) % 2 != 0):
+            colour1 = (211, 211, 211)
+                
+        for y in range(100):
+            for x in range(100):
+                img.putpixel(((x + 50 + (100*LastMoveX)), y + 50 + (100*LastMoveY)), (colour1))
+        img.save("ChessBoard.png")
+
+# -------------------------------------
+
 # Här spelas spelet / flyttas pjäserna
 
 boardmaker()
@@ -497,6 +549,13 @@ T = 0
 
 wT = 600
 bT = 600
+
+WQMoves = 0
+BQMoves = 0
+WR1Moves = 0
+WR2Moves = 0
+BR1Moves = 0
+BR2Moves = 0
 
 while True:
     
@@ -524,8 +583,10 @@ while True:
     playertime()
     if bT <= 0:
         print("Tiden är ute för svart spelare. Vit spelare vinner!")
+        break
     elif wT <= 0:
         print("Tiden är ute för vit spelare. Svart spelare vinner!")
+        break
     else:
         None
     
@@ -608,12 +669,19 @@ while True:
     Board[My, Mx] = P
     Board[Py, Px] = " "
     
+    if enpassent == True:
+        Board[LastMoveY, LastMoveX] = " "
+        enpassentupdate()
+    else:
+        None
+    
     LastPiece = P
     LastMoveX = Mx
     LastMoveY = My
     
+    towercheck()
+    
     BoardPiecesUpdate()
     
     clear_output(wait=True)
-
 # ---------------------------------------------------------------
