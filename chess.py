@@ -297,7 +297,7 @@ def legalmove3():
                 for i in range(xdelta):
                     if i == 0:
                         continue
-                    if Board[(Py + i), (Px + i)] in (P1.values() or Board[(Py + i), (Px + i)] in P2.values()):
+                    if Board[(Py + i), (Px + i)] in P1.values() or Board[(Py + i), (Px + i)] in P2.values():
                         return False
                     else:
                         None
@@ -305,7 +305,7 @@ def legalmove3():
                 for i in range(xdelta):
                     if i == 0:
                         continue
-                    if Board[(Py - i), (Px + i)] in (P1.values() or Board[(Py - i), (Px + i)] in P2.values()):
+                    if Board[(Py - i), (Px + i)] in P1.values() or Board[(Py - i), (Px + i)] in P2.values():
                         return False
                     else:
                         None
@@ -313,7 +313,7 @@ def legalmove3():
                 for i in range(ydelta):
                     if i == 0:
                         continue
-                    if Board[(Py + i), (Px - i)] in (P1.values() or Board[(Py + i), (Px - i)] in P2.values()):
+                    if Board[(Py + i), (Px - i)] in P1.values() or Board[(Py + i), (Px - i)] in P2.values():
                         return False
                     else:
                         None
@@ -448,11 +448,11 @@ def towermove():
     
     if P == "♔":
         if (My == 7) and (Mx == 2):
-            if (WKMoves == 0) and (WR1Moves == 0) and ((Board[7, 3] not in P1.values()) and (Board[7, 3] not in P2.values())):
+            if (WKMoves == 0) and (WR1Moves == 0) and (Board[7, 3] not in P1.values()) and (Board[7, 3] not in P2.values()) and (Board[7, 1] not in P1.values()) and (Board[7, 1] not in P2.values()):
                 return True
             else:
                 return False
-        elif (My == 7) and (Mx == 6):
+        elif (My == 7) and (Mx == 6) and (Board[7, 5] not in P1.values()) and (Board[7, 5] not in P2.values()):
             if (WKMoves == 0) and (WR2Moves == 0):
                 return True
             else:
@@ -461,11 +461,11 @@ def towermove():
             return None
     if P == "♚":
         if (My == 0) and (Mx == 2):
-            if (BKMoves == 0) and (BR1Moves == 0):
+            if (BKMoves == 0) and (BR1Moves == 0) and (Board[0, 3] not in P1.values()) and (Board[0, 3] not in P2.values()) and (Board[0, 1] not in P1.values()) and (Board[0, 1] not in P2.values()):
                 return True
             else:
                 return False
-        elif (My == 0) and (Mx == 6):
+        elif (My == 0) and (Mx == 6) and (Board[0, 5] not in P1.values()) and (Board[0, 5] not in P2.values()):
             if (BKMoves == 0) and (BR2Moves == 0):
                 return True
             else:
