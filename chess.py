@@ -780,7 +780,7 @@ while True:
             Board[Py, Px] = " "
             clear_output(wait=True)
             
-            BoardPieces()
+            BoardUpdater()
             BoardImage = Image.open("ChessBoard.png")
             BoardImage.show()
             
@@ -792,7 +792,7 @@ while True:
             Board[Py, Px] = " "
             clear_output(wait=True)
             
-            BoardPieces()
+            BoardUpdater()
             BoardImage = Image.open("ChessBoard.png")
             BoardImage.show()
             
